@@ -2,24 +2,21 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class NotifyHelper {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  var indiaTime;
 
   NotifyHelper() {
     tz.initializeTimeZones(); // Initialize timezone
   }
+
   Future<void> initNotification() async {
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()!
-        .requestNotificationsPermission();
     // Android initialization settings
     AndroidInitializationSettings initializationSettingsAndroid =
         const AndroidInitializationSettings('@mipmap/ic_launcher');
+
     // iOS initialization settings
     var initializationSettingsIOS = DarwinInitializationSettings(
         requestAlertPermission: true,
@@ -35,7 +32,7 @@ class NotifyHelper {
         onDidReceiveNotificationResponse:
             (NotificationResponse notificationResponse) async {
       final String? payload = notificationResponse.payload;
-      if (notificationResponse.payload != null) {
+      if (payload != null) {
         debugPrint('notification payload: $payload');
       }
     });
@@ -51,13 +48,10 @@ class NotifyHelper {
           enableVibration: true,
           playSound: true,
         ));
+  }
 
   Future selectNotification(String payload) async {
     print('notification payload: $payload');
-    // await Navigator.push(
-    //   context,
-    //   MaterialPageRoute<void>(builder: (context) => SecondScreen(payload)),
-    // );
   }
 
   // Notification details for Android and iOS
@@ -75,7 +69,6 @@ class NotifyHelper {
 
   Future<void> scheduleNotification(
       DateTime scheduleNotificationDateTime, String title, String body) async {
-    print(scheduleNotificationDateTime);
     var androidChannelSpecifics = AndroidNotificationDetails(
       'my_channel2',
       'My Channel2',
@@ -98,15 +91,13 @@ class NotifyHelper {
       android: androidChannelSpecifics,
     );
 
-    print(scheduleNotificationDateTime);
-
     await flutterLocalNotificationsPlugin.zonedSchedule(
         0,
         title,
         body,
-        TZDateTime.from(
+        tz.TZDateTime.from(
           scheduleNotificationDateTime,
-          local,
+          tz.local,
         ),
         platformChannelSpecifics,
         uiLocalNotificationDateInterpretation:
@@ -130,20 +121,13 @@ class NotifyHelper {
 
   // Periodically show notifications
   Future<void> periodicallyShowNotification() async {
-    await flutterLocalNotificationsPlugin.periodicallyShow(
-      0,
-      'Repeating Title',
-      'Repeating Body',
-      RepeatInterval.everyMinute,
-      notificationDetails(),
-      androidAllowWhileIdle: true,
-    );
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.periodicallyShow(0, 'repeating title',
-        'repeating body', RepeatInterval.everyMinute, platformChannelSpecifics,
-        // ignore: deprecated_member_use
-        androidAllowWhileIdle: true);
-
-  }
+  await flutterLocalNotificationsPlugin.periodicallyShow(
+    0,
+    'Repeating Title',
+    'Repeating Body',
+    RepeatInterval.everyMinute,
+    notificationDetails(),
+     androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+  );
+}
 }
