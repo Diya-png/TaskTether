@@ -8,19 +8,21 @@ class TaskServices {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> addTask(Task task) async {
-    log(FirebaseAuth.instance.currentUser!.uid);
     try {
-      await _firestore.collection('tasks').add(task.toJson());
+      DocumentReference docRef = await _firestore.collection('tasks').add(task.toJson());
+      await docRef.update({'id': docRef.id}); // Set the Firestore ID as the task ID
+      task.id = int.tryParse(docRef.id);
       await _firestore
           .collection('myusers')
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .update({
-        'tasks': FieldValue.arrayUnion([task.id.toString()])
+        'tasks': FieldValue.arrayUnion([docRef.id])
       });
     } catch (e) {
       log(e.toString());
     }
   }
+
 
   Future<void> updateTaskStatus(Task task) async {
     try {

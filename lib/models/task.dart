@@ -29,9 +29,10 @@ class Task {
     this.id,
   });
 
+  // Named constructor to create a Task from JSON data
   Task.fromJson(Map<String, dynamic> json)
       : id = json['id'] ?? 0,
-        userId = json['userId'] ?? "",
+        userId = json['userId'] ?? "", // Use an empty string as fallback
         title = json['title'],
         note = json['note'],
         isCompleted = json['isCompleted'],
@@ -43,10 +44,11 @@ class Task {
         remind = json['remind'] ?? 0,
         repeat = json['repeat'];
 
+  // Convert Task object to JSON
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
-    data['userId'] = FirebaseAuth.instance.currentUser!.uid;
+    data['userId'] = FirebaseAuth.instance.currentUser?.uid ?? "anonymous"; // Fallback to "anonymous" if no user is logged in
     data['title'] = title;
     data['note'] = note;
     data['isCompleted'] = isCompleted;
